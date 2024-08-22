@@ -4,11 +4,12 @@ import { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
 
 export type Directories = {
-  id: string
-  name: string,
-  path: string,
-  href: string,
-  isDirectory: boolean
+  id: string;
+  name: string;
+  path: string;
+  href: string;
+  relativePath: string;
+  isDirectory: boolean;
 }
 
 export const columns: ColumnDef<Directories>[] = [

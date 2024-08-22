@@ -1,8 +1,10 @@
 import { Directories, columns } from "./columns";
 import { DataTable } from "./data-table";
 import { Breadcrumb, BreadcrumbItems } from "@/components/breadcrumb";
+import { Gallery } from "@/components/gallery";
 import { promises as fs } from "fs";
 import path from 'path';
+import { checkImageByMimeType, checkImageByExtension } from "@/lib/utils";
 
 
 function getBreadcrumbItems(folderArray: Array<string>): Array<BreadcrumbItems> {
@@ -35,13 +37,14 @@ function buildFinalTableData(tableData: Array<Directories>, pathArray: Array<str
       name: "..",
       path: "",
       href: href,
+      relativePath: "/storage",
       isDirectory: true
     }
   ].concat(tableData);
 }
 
 export default async function Home({ pathArray = [] }: { pathArray: Array<string> }) {
-  const mainDir = path.join(process.cwd(), "data", pathArray.join("/"));
+  const mainDir = path.join(process.cwd(), "public", "storage", pathArray.join("/"));
   const filenames =  await fs.readdir(mainDir);
 
   const files = await Promise.all(filenames.map(async (filename: string) => {
@@ -53,6 +56,7 @@ export default async function Home({ pathArray = [] }: { pathArray: Array<string
       name: filename,
       path: fullPath,
       href: path.join("/folder/" + pathArray.join("/"), filename),
+      relativePath: path.join("/storage", pathArray.join("/")),
       isDirectory: fileStat.isDirectory()
     }
   }));
@@ -63,10 +67,14 @@ export default async function Home({ pathArray = [] }: { pathArray: Array<string
     ? buildFinalTableData(tableData, pathArray)
     : tableData;
 
+  const images = files.filter((file) => 
+    checkImageByExtension(file.name) && checkImageByMimeType(file.path))
+
   return (
-    <div className="container flex flex-col items-start gap-8">
+    <div className="container flex flex-col items-start gap-8 pt-8 pb-16 overflow-auto max-h-dvh">
       <Breadcrumb items={getBreadcrumbItems(pathArray)} />
       <DataTable columns={columns} data={finalTableData} />
+      <Gallery images={images} />
     </div>
   );
 }
