@@ -5,6 +5,7 @@ import { Gallery } from "@/components/gallery";
 import { promises as fs } from "fs";
 import path from 'path';
 import { checkImageByMimeType, checkImageByExtension } from "@/lib/utils";
+import { notFound } from "next/navigation";
 
 
 function getBreadcrumbItems(folderArray: Array<string>): Array<BreadcrumbItems> {
@@ -45,7 +46,16 @@ function buildFinalTableData(tableData: Array<Directories>, pathArray: Array<str
 
 export default async function Home({ pathArray = [] }: { pathArray: Array<string> }) {
   const mainDir = path.join(process.cwd(), "public", "storage", pathArray.join("/"));
-  const filenames =  await fs.readdir(mainDir);
+  let filenames: Array<string>;
+  
+  try {
+    filenames = await fs.readdir(mainDir);
+  }
+  catch (error) {
+    console.log(error);
+    notFound();
+  }
+  
 
   const files = await Promise.all(filenames.map(async (filename: string) => {
     const fullPath = path.join(mainDir, filename);
@@ -71,10 +81,12 @@ export default async function Home({ pathArray = [] }: { pathArray: Array<string
     checkImageByExtension(file.name) && checkImageByMimeType(file.path))
 
   return (
-    <div className="container flex flex-col items-start gap-8 pt-8 pb-16 overflow-auto max-h-dvh">
-      <Breadcrumb items={getBreadcrumbItems(pathArray)} />
-      <DataTable columns={columns} data={finalTableData} />
-      <Gallery images={images} />
+    <div className="overflow-auto max-h-dvh w-full">
+      <div className="container flex flex-col items-start gap-8 pt-8 pb-16 max-w-screen-2xl">
+        <Breadcrumb items={getBreadcrumbItems(pathArray)} />
+        <DataTable columns={columns} data={finalTableData} />
+        <Gallery images={images} />
+      </div>
     </div>
   );
 }
