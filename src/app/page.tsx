@@ -1,11 +1,16 @@
 import { Directories, columns } from "./columns";
 import { DataTable } from "./data-table";
 import { Breadcrumb, BreadcrumbItems } from "@/components/breadcrumb";
-import { Gallery } from "@/components/gallery";
 import { promises as fs } from "fs";
 import path from 'path';
-import { checkImageByMimeType, checkImageByExtension } from "@/lib/utils";
+import { isImageFile } from "@/lib/utils";
 import { notFound } from "next/navigation";
+import dynamic from 'next/dynamic';
+
+const Gallery = dynamic(() => import('@/components/gallery').then(mod => ({ default: mod.Gallery })), {
+  loading: () => <div className="flex items-center justify-center p-8 text-muted-foreground">Loading gallery...</div>,
+  ssr: false
+});
 
 
 function getBreadcrumbItems(folderArray: Array<string>): Array<BreadcrumbItems> {
@@ -53,23 +58,24 @@ export default async function Home({ pathArray = [] }: { pathArray: Array<string
   }
   catch (error) {
     console.log(error);
-    notFound();
+    notFound()
   }
   
 
-  const files = await Promise.all(filenames.map(async (filename: string) => {
+  const files = [];
+  for (const filename of filenames) {
     const fullPath = path.join(mainDir, filename);
     const fileStat = await fs.lstat(fullPath);
     
-    return {
+    files.push({
       id: filename,
       name: filename,
       path: fullPath,
       href: path.join("/folder/" + pathArray.join("/"), filename),
       relativePath: path.join("/storage", pathArray.join("/")),
       isDirectory: fileStat.isDirectory()
-    }
-  }));
+    });
+  }
 
   const tableData = files.filter((file) => file.isDirectory);
   const finalTableData = 
@@ -78,7 +84,7 @@ export default async function Home({ pathArray = [] }: { pathArray: Array<string
     : tableData;
 
   const images = files.filter((file) => 
-    checkImageByExtension(file.name) && checkImageByMimeType(file.path))
+    !file.isDirectory && isImageFile(file.name))
 
   return (
     <div className="overflow-auto max-h-dvh w-full">
