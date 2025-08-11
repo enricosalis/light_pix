@@ -1,36 +1,140 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Light Pix
 
-## Getting Started
+A lightweight photo gallery web application that displays your photo collection directly from the filesystem. Built with **Next.js 14** and designed for resource-constrained environments like Raspberry Pi boards.
 
-First, run the development server:
+## Features
+
+* **Lightweight & Efficient**: Optimized for low-resource devices and minimal memory usage
+* **Directory Navigation**: Browse photos organized in folder structures with breadcrumb navigation
+* **Responsive Gallery**: Grid-based photo display that adapts to screen size
+* **Full-Screen Carousel**: Click any image to open in a carousel viewer with navigation
+* **Dark/Light Theme**: Automatic theme switching based on system preferences
+* **Docker Ready**: Easy deployment with multi-stage optimized Docker builds
+* **TypeScript**: Full type safety throughout the application
+
+## Supported Image Formats
+
+* JPEG/JPG
+* PNG
+* GIF
+* BMP
+* WebP
+* SVG
+
+## Prerequisites
+
+* [Node.js 18+](https://nodejs.org/) for local development
+* [Docker](https://docs.docker.com/get-docker/) for containerized deployment
+* Photos organized in directories within `public/storage/`
+
+## Quick Start
+
+### Local Development
 
 ```bash
+# Clone and install dependencies
+git clone <repository-url>
+cd light_pix
+npm install
+
+# Start development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Access the application at `http://localhost:3000`
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Docker Deployment
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+```bash
+# Build the image
+docker build -t light-pix .
 
-## Learn More
+# Run the container
+docker run -d \
+  -p 3000:3000 \
+  -v /path/to/your/photos:/app/public/storage:ro \
+  light-pix
+```
 
-To learn more about Next.js, take a look at the following resources:
+Replace `/path/to/your/photos` with your actual photo directory path.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Project Structure
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+```
+src/
+├── app/                           # Next.js App Router
+│   ├── folder/[...folderName]/   # Dynamic directory routing
+│   ├── columns.tsx               # Table column definitions
+│   ├── data-table.tsx           # Directory listing component
+│   └── page.tsx                 # Home page
+├── components/
+│   ├── ui/                      # shadcn/ui components
+│   ├── gallery.tsx              # Photo grid component
+│   ├── carousel.tsx             # Full-screen image viewer
+│   ├── breadcrumb.tsx           # Navigation breadcrumbs
+│   └── navbar.tsx               # Top navigation
+└── lib/
+    └── utils.ts                 # Utilities and image validation
+```
 
-## Deploy on Vercel
+## Configuration
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Environment Variables
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `PORT` | Server port | `3000` |
+| `NODE_ENV` | Environment mode | `development` |
+
+### Storage Directory
+
+Place your photos in `public/storage/` following your desired directory structure:
+
+```
+public/storage/
+├── 2024/
+│   ├── vacation/
+│   │   ├── beach.jpg
+│   │   └── sunset.png
+│   └── family/
+│       └── dinner.jpg
+└── 2023/
+    └── holidays/
+        └── christmas.jpg
+```
+
+## Architecture
+
+* **Framework**: Next.js 14 with App Router and TypeScript
+* **Styling**: Tailwind CSS with shadcn/ui components
+* **Image Handling**: Next.js Image component with automatic optimization
+* **Carousel**: Embla Carousel for smooth image navigation
+* **Tables**: TanStack Table for directory listings
+* **Theme**: next-themes with system preference detection
+
+## Development Commands
+
+```bash
+npm run dev      # Start development server
+npm run build    # Build for production
+npm start        # Start production server
+npm run lint     # Run ESLint
+```
+
+## Docker Configuration
+
+The included Dockerfile uses a multi-stage build optimized for production:
+
+* **Build stage**: Installs dependencies and builds the application
+* **Runtime stage**: Minimal Node.js Alpine image with only production files
+* **Security**: Runs as non-root `nextjs` user
+* **Optimization**: Uses Next.js standalone output for minimal container size
+
+## Contributing
+
+Contributions are welcome! Feel free to submit issues, feature requests, or pull requests.
+
+## License
+
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for more details.
+
